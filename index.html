@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Validator</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+    #reader { width: 300px; margin: auto; }
+    #result { font-size: 1.5em; margin-top: 20px; font-weight: bold; }
+    .valid { color: green; }
+    .invalid { color: red; }
+  </style>
+</head>
+<body>
+  <h2>QR Code Validator</h2>
+  <div id="reader"></div>
+  <div id="result">Scan a QR code...</div>
+
+  <script>
+    // Valid ID list
+    const validIDs = [];
+    for (let i = 101; i <= 150; i++) {
+      validIDs.push(`SPC${i}`);
+    }
+
+    function onScanSuccess(decodedText) {
+      let resultDiv = document.getElementById("result");
+
+      if (validIDs.includes(decodedText)) {
+        resultDiv.innerHTML = "✅ Valid ID: " + decodedText;
+        resultDiv.className = "valid";
+      } else {
+        resultDiv.innerHTML = "❌ Invalid ID: " + decodedText;
+        resultDiv.className = "invalid";
+      }
+    }
+
+    function onScanFailure(error) {
+      // Ignore scan errors
+    }
+
+    let html5QrcodeScanner = new Html5QrcodeScanner(
+      "reader", { fps: 10, qrbox: 250 });
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+  </script>
+</body>
+</html>
