@@ -10,25 +10,27 @@
       margin: 0;
       font-family: "Noto Sans Devanagari", sans-serif;
       text-align: center;
-      color: white;
-      background: url("https://images.unsplash.com/photo-1508264165352-258859e62245?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80") no-repeat center center fixed;
+      color: #4a1c40;
+      background: linear-gradient(rgba(255, 228, 230, 0.8), rgba(255, 192, 203, 0.8)),
+                  url("https://images.unsplash.com/photo-1508264165352-258859e62245?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80") 
+                  no-repeat center center fixed;
       background-size: cover;
     }
     header {
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(255, 192, 203, 0.6);
       padding: 20px;
-      border-bottom: 2px solid #fff;
+      border-bottom: 2px solid #f48fb1;
     }
     header h1 {
       font-size: 2em;
       margin: 0;
-      color: #ffe082;
-      text-shadow: 2px 2px 5px black;
+      color: #880e4f;
+      text-shadow: 1px 1px 3px #ffe6f0;
     }
     header p {
       font-size: 1.2em;
       margin: 5px 0 0;
-      color: #ffcc80;
+      color: #ad1457;
       font-style: italic;
     }
     #reader {
@@ -41,9 +43,9 @@
       padding: 15px;
       border-radius: 15px;
       display: inline-block;
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 182, 193, 0.4);
       backdrop-filter: blur(10px);
-      color: #fff;
+      color: #4a1c40;
       font-size: 1.1em;
       text-align: left;
       max-width: 90%;
@@ -56,33 +58,36 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      background: rgba(0,0,0,0.6);
-      color: #fff;
+      background: #f8bbd0;
+      color: #4a1c40;
       transition: 0.3s;
+      font-weight: bold;
     }
     .btn:hover {
-      background: rgba(255,255,255,0.2);
+      background: #f48fb1;
+      color: white;
     }
     #detailsBox {
       margin-top: 25px;
       padding: 15px;
-      background: rgba(0,0,0,0.5);
+      background: rgba(255, 228, 230, 0.7);
       border-radius: 15px;
       display: none;
+      color: #4a1c40;
     }
     .quote {
       margin-top: 25px;
       font-size: 1.2em;
       font-weight: bold;
-      color: #ffe082;
-      text-shadow: 1px 1px 3px black;
+      color: #ad1457;
+      text-shadow: 1px 1px 3px #ffe6f0;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>🙏 स्नेह प्रयास परिवार आपका स्वागत करता है 🙏</h1>
-    <p>अष्टापद कैलाश की यात्रा – आत्मशांति और मोक्ष का मार्ग</p>
+    <h1>🌸 स्नेह प्रयास परिवार आपका स्वागत करता है 🌸</h1>
+    <p>अष्टापद कैलाश यात्रा – आत्मशांति की ओर एक पवित्र कदम</p>
   </header>
 
   <button class="btn" onclick="startScanner()">📷 QR Scan करें</button>
@@ -148,7 +153,7 @@
         scannedDetails.push(formatted);
         updateDetailsList();
 
-        html5QrcodeScanner.clear(); // stop scanner
+        html5QrcodeScanner.clear();
         document.getElementById("reader").style.display = "none";
       } catch (e) {
         resultDiv.innerText = "❌ Invalid QR Code";
