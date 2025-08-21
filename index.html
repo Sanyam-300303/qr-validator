@@ -1,124 +1,114 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sneh Prayas - Ashtapad Yatra QR Scanner</title>
+  <title>Sneh Prayas QR Validator</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
     body {
-      font-family: "Arial", sans-serif;
       margin: 0;
-      padding: 0;
+      font-family: 'Noto Sans Devanagari', Arial, sans-serif;
       text-align: center;
-      background: url('https://i.ibb.co/8d1y3Vx/mountain-bg.jpg') no-repeat center center fixed;
+      background: url("https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80") no-repeat center center fixed;
       background-size: cover;
       color: white;
     }
     header {
-      background: rgba(0, 0, 0, 0.5);
-      padding: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 15px;
+    }
+    header h1 {
+      margin: 0;
       font-size: 1.8em;
-      font-weight: bold;
-      text-shadow: 2px 2px 4px #000;
+      color: #FFD700;
     }
-    header small {
-      display: block;
-      font-size: 0.7em;
-      margin-top: 5px;
+    header p {
+      margin: 5px 0 0;
+      font-size: 1.1em;
+      font-style: italic;
+      color: #FFFAF0;
     }
-    #middle-image {
+    #reader {
+      width: 280px;
       margin: 20px auto;
-      width: 200px;
-      height: 200px;
-      background: url('https://i.ibb.co/0qDbFMS/jain-tirthankar.png') no-repeat center center;
-      background-size: contain;
-      opacity: 0.8;
-    }
-    #scanner-container {
       display: none;
-      margin: 20px auto;
-      width: 320px;
     }
     #result {
       margin-top: 20px;
+      font-size: 1.2em;
       padding: 15px;
       border-radius: 12px;
-      font-size: 1.3em;
-      font-weight: bold;
-      display: inline-block;
-      background: rgba(255, 255, 255, 0.8);
-      color: black;
-      max-width: 80%;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
     }
-    .btn {
-      padding: 12px 20px;
+    .valid { color: #90EE90; }
+    .invalid { color: #FF6347; }
+    button {
       margin: 10px;
+      padding: 12px 18px;
       border: none;
-      border-radius: 8px;
-      cursor: pointer;
+      border-radius: 10px;
       font-size: 1em;
+      cursor: pointer;
+      background: #FFD700;
+      color: #000;
       font-weight: bold;
-      transition: 0.3s;
     }
-    .btn-scan {
-      background: #28a745;
-      color: white;
+    button:hover {
+      background: #FFA500;
     }
-    .btn-reset {
-      background: #dc3545;
-      color: white;
-    }
-    #details {
-      margin: 20px auto;
-      padding: 15px;
-      width: 80%;
-      max-width: 600px;
-      background: rgba(255, 255, 255, 0.7);
-      border-radius: 12px;
+    #history {
+      margin-top: 20px;
+      background: rgba(255, 255, 255, 0.85);
       color: black;
+      padding: 15px;
+      border-radius: 12px;
+      display: none;
       text-align: left;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
     }
     #quotes {
-      margin: 20px;
-      font-size: 1.3em;
-      font-weight: bold;
-      color: #ffe6cc;
-      text-shadow: 1px 1px 3px #000;
+      margin-top: 20px;
+      font-size: 1em;
+      font-style: italic;
+      color: #fff;
     }
   </style>
 </head>
 <body>
   <header>
-    🌸 स्नेह प्रयास आप सभी का पवित्र अष्टापद यात्रा में हार्दिक स्वागत करता है 🌸
-    <small>🙏 भगवान आदिनाथ की कृपा से यह यात्रा मंगलमय हो 🙏</small>
-    <small>🕉️ चलो साथ मिलकर कैलाश की ओर – शांति, अहिंसा और मैत्री का संदेश फैलाएँ 🕉️</small>
+    <h1>🌸 स्नेह प्रयास परिवार की ओर से आप सभी का हार्दिक स्वागत 🌸</h1>
+    <p>शांति, श्रद्धा और समर्पण की यात्रा में आपका स्वागत है</p>
   </header>
 
-  <div id="middle-image"></div>
-
-  <button class="btn btn-scan" onclick="startScanner()">📷 QR Scan करें</button>
-  <button class="btn btn-reset" onclick="resetDetails()">🗑 Reset Details</button>
-
-  <div id="scanner-container">
-    <div id="reader"></div>
+  <div>
+    <button onclick="startScanner()">📷 QR Scan करें</button>
+    <button onclick="showHistory()">📝 Details</button>
+    <button onclick="resetHistory()">🗑 Reset</button>
   </div>
 
-  <div id="result">👉 कृपया QR कोड स्कैन करें...</div>
-
-  <div id="details">
-    <h3>📋 Scan History</h3>
-    <ul id="history-list"></ul>
-  </div>
-
+  <div id="reader"></div>
+  <div id="result"></div>
+  <div id="history"></div>
   <div id="quotes"></div>
 
   <script>
     let html5QrcodeScanner;
-    let historyList = [];
+    let scannedHistory = [];
+    const quotes = [
+      "अहिंसा परमोधर्मः 🕊️",
+      "जियो और जीने दो 🌸",
+      "सम्यक दर्शन, सम्यक ज्ञान, सम्यक चारित्र ही मोक्षमार्ग है 🕉️",
+      "आत्मा ही परम सत्य है 🙏"
+    ];
 
     function startScanner() {
-      document.getElementById("scanner-container").style.display = "block";
+      document.getElementById("reader").style.display = "block";
+      document.getElementById("result").style.display = "block";
+      document.getElementById("history").style.display = "none";
+
       html5QrcodeScanner = new Html5Qrcode("reader");
       html5QrcodeScanner.start(
         { facingMode: "environment" },
@@ -128,53 +118,62 @@
     }
 
     function onScanSuccess(decodedText) {
-      // Stop scanner after first valid scan
-      html5QrcodeScanner.stop().then(() => {
-        document.getElementById("scanner-container").style.display = "none";
-      });
-
       let resultDiv = document.getElementById("result");
-      resultDiv.innerHTML = `
-        ✅ सफल स्कैन: <br>
-        <b>${decodedText}</b>
-      `;
 
-      // Store in history
-      historyList.push(decodedText);
-      updateHistory();
+      try {
+        let data = JSON.parse(decodedText);
+        let details = `
+          <b>Booking ID:</b> ${data.BookingID}<br>
+          <b>Name:</b> ${data.Name}<br>
+          <b>Contact:</b> ${data.Contact}<br>
+          <b>Age:</b> ${data.Age}<br>
+          <b>Gender:</b> ${data.Gender}<br>
+          <b>Size:</b> ${data.Size}<br>
+          <b>Paid:</b> ${data.Paid}<br>
+          <b>Due:</b> ${data.Due}<br>
+          <b>Total:</b> ${data.Total}<br>
+          <b>Confirmation:</b> ${data.Confirmation}
+        `;
+        resultDiv.innerHTML = "✅ <span class='valid'>Valid QR</span><br>" + details;
+
+        scannedHistory.push(details);
+        stopScanner();
+      } catch {
+        resultDiv.innerHTML = "❌ <span class='invalid'>Invalid QR</span>";
+      }
     }
 
-    function updateHistory() {
-      let list = document.getElementById("history-list");
-      list.innerHTML = "";
-      historyList.forEach((item, index) => {
-        let li = document.createElement("li");
-        li.textContent = item;
-        list.appendChild(li);
-      });
+    function stopScanner() {
+      if (html5QrcodeScanner) {
+        html5QrcodeScanner.stop().then(() => {
+          document.getElementById("reader").style.display = "none";
+        });
+      }
     }
 
-    function resetDetails() {
-      historyList = [];
-      updateHistory();
-      document.getElementById("result").innerHTML = "👉 कृपया QR कोड स्कैन करें...";
+    function showHistory() {
+      let historyDiv = document.getElementById("history");
+      historyDiv.style.display = "block";
+      if (scannedHistory.length === 0) {
+        historyDiv.innerHTML = "<i>अभी तक कोई QR स्कैन नहीं हुआ।</i>";
+      } else {
+        historyDiv.innerHTML = "<h3>📜 Scanned Details:</h3><hr>" + scannedHistory.join("<hr>");
+      }
     }
 
-    // Rotating Hindi Quotes
-    const hindiQuotes = [
-      "🙏 अहिंसा परमो धर्मः 🙏",
-      "🌸 जियो और जीने दो 🌸",
-      "🕉️ आत्मा ही परमेश्वर है 🕉️",
-      "🌿 संयम ही सच्चा साधन है 🌿",
-      "✨ धर्म की यात्रा ही मोक्ष का मार्ग है ✨"
-    ];
-    let index = 0;
-    function changeQuote() {
-      document.getElementById("quotes").innerText = hindiQuotes[index];
-      index = (index + 1) % hindiQuotes.length;
+    function resetHistory() {
+      scannedHistory = [];
+      document.getElementById("history").innerHTML = "<i>Data has been reset.</i>";
     }
-    setInterval(changeQuote, 4000);
-    changeQuote();
+
+    // Rotate quotes dynamically
+    let quoteIndex = 0;
+    function showQuote() {
+      document.getElementById("quotes").innerText = quotes[quoteIndex];
+      quoteIndex = (quoteIndex + 1) % quotes.length;
+    }
+    setInterval(showQuote, 5000);
+    showQuote();
   </script>
 </body>
 </html>
