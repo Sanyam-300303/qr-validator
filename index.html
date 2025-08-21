@@ -1,179 +1,184 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sneh Prayas QR Validator</title>
+  <title>स्नेह प्रयास - अष्टापद यात्रा</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
     body {
       margin: 0;
-      font-family: 'Noto Sans Devanagari', Arial, sans-serif;
+      font-family: "Noto Sans Devanagari", sans-serif;
       text-align: center;
-      background: url("https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80") no-repeat center center fixed;
-      background-size: cover;
       color: white;
+      background: url("https://upload.wikimedia.org/wikipedia/commons/0/00/Rishabhanatha_Mount_Kailash_Ashtapada.jpg") no-repeat center center fixed;
+      background-size: cover;
     }
     header {
       background: rgba(0, 0, 0, 0.6);
-      padding: 15px;
+      padding: 20px;
+      border-bottom: 2px solid #fff;
     }
     header h1 {
+      font-size: 2em;
       margin: 0;
-      font-size: 1.8em;
-      color: #FFD700;
+      color: #ffe082;
+      text-shadow: 2px 2px 5px black;
     }
     header p {
+      font-size: 1.2em;
       margin: 5px 0 0;
-      font-size: 1.1em;
+      color: #ffcc80;
       font-style: italic;
-      color: #FFFAF0;
     }
     #reader {
-      width: 280px;
+      width: 320px;
       margin: 20px auto;
       display: none;
     }
     #result {
       margin-top: 20px;
-      font-size: 1.2em;
       padding: 15px;
-      border-radius: 12px;
-      background: rgba(0, 0, 0, 0.6);
-      display: none;
+      border-radius: 15px;
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      font-size: 1.1em;
+      text-align: left;
+      max-width: 90%;
+      white-space: pre-line;
     }
-    .valid { color: #90EE90; }
-    .invalid { color: #FF6347; }
-    button {
-      margin: 10px;
+    .btn {
       padding: 12px 18px;
+      margin: 8px;
+      font-size: 1em;
       border: none;
       border-radius: 10px;
-      font-size: 1em;
       cursor: pointer;
-      background: #FFD700;
-      color: #000;
-      font-weight: bold;
-    }
-    button:hover {
-      background: #FFA500;
-    }
-    #history {
-      margin-top: 20px;
-      background: rgba(255, 255, 255, 0.85);
-      color: black;
-      padding: 15px;
-      border-radius: 12px;
-      display: none;
-      text-align: left;
-      max-width: 400px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    #quotes {
-      margin-top: 20px;
-      font-size: 1em;
-      font-style: italic;
+      background: rgba(0,0,0,0.6);
       color: #fff;
+      transition: 0.3s;
+    }
+    .btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    #detailsBox {
+      margin-top: 25px;
+      padding: 15px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 15px;
+      display: none;
+    }
+    .quote {
+      margin-top: 25px;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #ffe082;
+      text-shadow: 1px 1px 3px black;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>🌸 स्नेह प्रयास परिवार की ओर से आप सभी का हार्दिक स्वागत 🌸</h1>
-    <p>शांति, श्रद्धा और समर्पण की यात्रा में आपका स्वागत है</p>
+    <h1>🙏 स्नेह प्रयास परिवार आपका स्वागत करता है 🙏</h1>
+    <p>अष्टापद कैलाश की यात्रा – आत्मशांति और मोक्ष का मार्ग</p>
   </header>
 
-  <div>
-    <button onclick="startScanner()">📷 QR Scan करें</button>
-    <button onclick="showHistory()">📝 Details</button>
-    <button onclick="resetHistory()">🗑 Reset</button>
-  </div>
+  <button class="btn" onclick="startScanner()">📷 QR Scan करें</button>
+  <button class="btn" onclick="showDetails()">📖 Details</button>
+  <button class="btn" onclick="resetDetails()">🗑 Reset</button>
 
   <div id="reader"></div>
   <div id="result"></div>
-  <div id="history"></div>
-  <div id="quotes"></div>
+
+  <div id="detailsBox">
+    <h3>📌 Scanned Details:</h3>
+    <ul id="detailsList"></ul>
+  </div>
+
+  <div class="quote" id="quoteBox"></div>
 
   <script>
     let html5QrcodeScanner;
-    let scannedHistory = [];
+    let scannedDetails = [];
+
     const quotes = [
-      "अहिंसा परमोधर्मः 🕊️",
-      "जियो और जीने दो 🌸",
-      "सम्यक दर्शन, सम्यक ज्ञान, सम्यक चारित्र ही मोक्षमार्ग है 🕉️",
-      "आत्मा ही परम सत्य है 🙏"
+      "अहिंसा परमो धर्मः 🕉️",
+      "जियो और जीने दो 🙏",
+      "सम्यक दर्शन, सम्यक ज्ञान और सम्यक चरित्र ही मोक्ष मार्ग है।",
+      "जो स्वयं पर विजय पा लेता है वही सच्चा वीर है।",
+      "क्रोध, मान, माया और लोभ – आत्मा के शत्रु हैं।",
+      "क्षमा ही आत्मा का सबसे बड़ा अलंकार है।"
     ];
+
+    function changeQuote() {
+      const box = document.getElementById("quoteBox");
+      const random = Math.floor(Math.random() * quotes.length);
+      box.innerText = quotes[random];
+    }
+    setInterval(changeQuote, 5000);
+    changeQuote();
 
     function startScanner() {
       document.getElementById("reader").style.display = "block";
-      document.getElementById("result").style.display = "block";
-      document.getElementById("history").style.display = "none";
-
-      html5QrcodeScanner = new Html5Qrcode("reader");
-      html5QrcodeScanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
-        onScanSuccess
-      );
+      html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+      html5QrcodeScanner.render(onScanSuccess, onScanFailure);
     }
 
     function onScanSuccess(decodedText) {
       let resultDiv = document.getElementById("result");
-
       try {
         let data = JSON.parse(decodedText);
-        let details = `
-          <b>Booking ID:</b> ${data.BookingID}<br>
-          <b>Name:</b> ${data.Name}<br>
-          <b>Contact:</b> ${data.Contact}<br>
-          <b>Age:</b> ${data.Age}<br>
-          <b>Gender:</b> ${data.Gender}<br>
-          <b>Size:</b> ${data.Size}<br>
-          <b>Paid:</b> ${data.Paid}<br>
-          <b>Due:</b> ${data.Due}<br>
-          <b>Total:</b> ${data.Total}<br>
-          <b>Confirmation:</b> ${data.Confirmation}
-        `;
-        resultDiv.innerHTML = "✅ <span class='valid'>Valid QR</span><br>" + details;
+        let formatted = 
+          `✅ Booking ID: ${data.BookingID}\n` +
+          `👤 Name: ${data.Name}\n` +
+          `📞 Contact: ${data.Contact}\n` +
+          `🎂 Age: ${data.Age}\n` +
+          `⚧ Gender: ${data.Gender}\n` +
+          `👕 Size: ${data.Size}\n` +
+          `💰 Paid: ${data.Paid}\n` +
+          `💳 Due: ${data.Due}\n` +
+          `🧾 Total: ${data.Total}\n` +
+          `📌 Confirmation: ${data.Confirmation}`;
+        
+        resultDiv.innerText = formatted;
+        resultDiv.style.display = "block";
 
-        scannedHistory.push(details);
-        stopScanner();
-      } catch {
-        resultDiv.innerHTML = "❌ <span class='invalid'>Invalid QR</span>";
+        scannedDetails.push(formatted);
+        updateDetailsList();
+
+        html5QrcodeScanner.clear(); // stop scanner
+        document.getElementById("reader").style.display = "none";
+      } catch (e) {
+        resultDiv.innerText = "❌ Invalid QR Code";
       }
     }
 
-    function stopScanner() {
-      if (html5QrcodeScanner) {
-        html5QrcodeScanner.stop().then(() => {
-          document.getElementById("reader").style.display = "none";
-        });
-      }
+    function onScanFailure(error) {
+      // ignore
     }
 
-    function showHistory() {
-      let historyDiv = document.getElementById("history");
-      historyDiv.style.display = "block";
-      if (scannedHistory.length === 0) {
-        historyDiv.innerHTML = "<i>अभी तक कोई QR स्कैन नहीं हुआ।</i>";
-      } else {
-        historyDiv.innerHTML = "<h3>📜 Scanned Details:</h3><hr>" + scannedHistory.join("<hr>");
-      }
+    function showDetails() {
+      document.getElementById("detailsBox").style.display = "block";
     }
 
-    function resetHistory() {
-      scannedHistory = [];
-      document.getElementById("history").innerHTML = "<i>Data has been reset.</i>";
+    function updateDetailsList() {
+      let list = document.getElementById("detailsList");
+      list.innerHTML = "";
+      scannedDetails.forEach((d) => {
+        let li = document.createElement("li");
+        li.innerText = d;
+        list.appendChild(li);
+      });
     }
 
-    // Rotate quotes dynamically
-    let quoteIndex = 0;
-    function showQuote() {
-      document.getElementById("quotes").innerText = quotes[quoteIndex];
-      quoteIndex = (quoteIndex + 1) % quotes.length;
+    function resetDetails() {
+      scannedDetails = [];
+      updateDetailsList();
+      document.getElementById("detailsBox").style.display = "none";
+      document.getElementById("result").innerText = "";
     }
-    setInterval(showQuote, 5000);
-    showQuote();
   </script>
 </body>
 </html>
