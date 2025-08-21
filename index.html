@@ -1,147 +1,152 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SPC QR Validator</title>
-<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-<style>
-  :root { --ok:#27ae60; --bad:#c0392b; --muted:#6c757d; --card:#ffffff; --bg:#f6f7fb; }
-  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:#222}
-  header{padding:16px 20px;background:#111;color:#fff;text-align:center;font-weight:600}
-  main{max-width:700px;margin:16px auto;padding:0 12px}
-  #reader{width:100%;max-width:480px;margin:16px auto}
-  .card{background:var(--card);border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,.08);padding:16px}
-  h2{margin:0 0 6px}
-  .status{display:inline-flex;gap:8px;align-items:center;font-weight:600;margin:8px 0}
-  .badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:13px}
-  .ok{background:rgba(39,174,96,.1);color:var(--ok);border:1px solid rgba(39,174,96,.25)}
-  .bad{background:rgba(192,57,43,.08);color:var(--bad);border:1px solid rgba(192,57,43,.25)}
-  .muted{background:rgba(0,0,0,.05);color:var(--muted);border:1px solid rgba(0,0,0,.08)}
-  table{width:100%;border-collapse:separate;border-spacing:0 8px}
-  th,td{text-align:left;padding:10px 12px}
-  th{font-size:13px;color:#555}
-  td{background:#fff;border-radius:10px}
-  .row{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center;margin:6px 0}
-  .key{color:#555;font-size:13px}
-  .val{font-weight:600}
-  footer{opacity:.7;text-align:center;font-size:13px;margin:18px 0}
-  button{border:none;background:#111;color:#fff;padding:10px 14px;border-radius:10px}
-  .actions{display:flex;gap:10px;justify-content:center;margin:10px 0}
-</style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Validator</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; background:#f4f4f9; }
+    #reader { width: 320px; margin: 20px auto; }
+    .card { 
+      display: none; max-width: 400px; margin: 20px auto; 
+      padding: 15px; border-radius: 12px; 
+      background: white; box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      text-align: left;
+    }
+    .row { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #eee; }
+    .row:last-child{ border-bottom:none; }
+    .key { font-weight:bold; color:#555; }
+    .val { color:#222; }
+    .badge { display:inline-block; padding:4px 10px; border-radius:6px; font-size:0.9em; margin-bottom:10px; }
+    .ok { background:#d4edda; color:#155724; }
+    .bad { background:#f8d7da; color:#721c24; }
+    .error { background:#fff3cd; color:#856404; }
+    #clearBtn { margin-top:15px; padding:8px 15px; border:none; border-radius:8px; background:#007bff; color:white; font-size:1em; cursor:pointer; }
+    #clearBtn:hover { background:#0056b3; }
+  </style>
 </head>
 <body>
-<header>SPC QR Validator</header>
-<main>
-  <div id="reader" class="card"></div>
+  <h2>QR Code Validator</h2>
+  <div id="reader"></div>
 
-  <div id="resultCard" class="card" style="display:none">
-    <div class="status">
-      <span id="statusBadge" class="badge muted">Waiting…</span>
-      <span id="statusText"></span>
-    </div>
+  <div id="resultCard" class="card">
+    <div id="statusBadge" class="badge"></div>
+    <div id="statusText"></div>
     <div id="details"></div>
-    <div class="actions">
-      <button id="clearBtn">Clear</button>
-    </div>
+    <button id="clearBtn">Scan Again</button>
   </div>
 
-  <div id="errorCard" class="card" style="display:none">
-    <div class="status">
-      <span class="badge bad">Invalid / Corrupted QR</span>
-    </div>
-    <div id="errorText" style="color:#c0392b;font-weight:600"></div>
+  <div id="errorCard" class="card">
+    <div class="badge error">Invalid QR</div>
+    <div id="errorText"></div>
+    <button id="clearBtn">Scan Again</button>
   </div>
 
-  <footer>Tip: Allow camera access. For best results, use the back camera on mobile.</footer>
-</main>
+  <script>
+    let scanner;
 
-<script>
-  // Helper: format money if number-like
-  function formatMoney(x){
-    if (x===undefined || x===null || x==="") return "";
-    const n = Number(x);
-    if (Number.isNaN(n)) return x;
-    return "₹" + n.toLocaleString("en-IN", {maximumFractionDigits:0});
-  }
-
-  // Render details nicely
-  function renderDetails(obj){
-    const fields = [
-      ["Booking ID", obj.BookingID],
-      ["Name", obj.Name],
-      ["Contact", obj.Contact],
-      ["Age", obj.Age],
-      ["Gender", obj.Gender],
-      ["Size", obj.Size],
-      ["Paid", formatMoney(obj.Paid)],
-      ["Due", formatMoney(obj.Due)],
-      ["Total", formatMoney(obj.Total)],
-      ["Confirmation", obj.Confirmation]
-    ];
-    return fields.map(([k,v])=>`
-      <div class="row">
-        <div class="key">${k}</div>
-        <div class="val">${(v ?? "").toString()}</div>
-      </div>
-    `).join("");
-  }
-
-  function showResult(obj){
-    const resultCard = document.getElementById("resultCard");
-    const statusBadge = document.getElementById("statusBadge");
-    const statusText = document.getElementById("statusText");
-    const details = document.getElementById("details");
-    const errorCard = document.getElementById("errorCard");
-
-    errorCard.style.display = "none";
-    resultCard.style.display = "block";
-
-    const due = Number(obj.Due||0);
-    if (!Number.isNaN(due) && due>0){
-      statusBadge.className = "badge bad";
-      statusBadge.textContent = "Due Pending";
-      statusText.textContent = `Payment due ${formatMoney(due)}`;
-    } else {
-      statusBadge.className = "badge ok";
-      statusBadge.textContent = "Payment Clear";
-      statusText.textContent = "All dues settled";
+    // Helper: format money if number-like
+    function formatMoney(x){
+      if (x===undefined || x===null || x==="") return "";
+      const n = Number(x);
+      if (Number.isNaN(n)) return x;
+      return "₹" + n.toLocaleString("en-IN", {maximumFractionDigits:0});
     }
-    details.innerHTML = renderDetails(obj);
 
-    if (navigator.vibrate) navigator.vibrate(50);
-  }
-
-  function showError(msg){
-    document.getElementById("resultCard").style.display = "none";
-    const e = document.getElementById("errorCard");
-    document.getElementById("errorText").textContent = msg;
-    e.style.display = "block";
-    if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
-  }
-
-  // Clear button
-  document.getElementById("clearBtn").addEventListener("click", ()=>{
-    document.getElementById("resultCard").style.display = "none";
-  });
-
-  // QR scanner
-  function onScanSuccess(decodedText, decodedResult){
-    try{
-      // Expecting JSON inside QR
-      const obj = JSON.parse(decodedText);
-      if (!obj.BookingID) throw new Error("Missing BookingID");
-      showResult(obj);
-    }catch(e){
-      // If not JSON, still show what was scanned
-      showError("Could not parse QR content. Raw: " + decodedText);
+    function renderDetails(obj){
+      const fields = [
+        ["Booking ID", obj.BookingID],
+        ["Name", obj.Name],
+        ["Contact", obj.Contact],
+        ["Age", obj.Age],
+        ["Gender", obj.Gender],
+        ["Size", obj.Size],
+        ["Paid", formatMoney(obj.Paid)],
+        ["Due", formatMoney(obj.Due)],
+        ["Total", formatMoney(obj.Total)],
+        ["Confirmation", obj.Confirmation]
+      ];
+      return fields.map(([k,v])=>`
+        <div class="row">
+          <div class="key">${k}</div>
+          <div class="val">${(v ?? "").toString()}</div>
+        </div>
+      `).join("");
     }
-  }
-  function onScanFailure(error){ /* ignore noisy frames */ }
 
-  const scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
-  scanner.render(onScanSuccess, onScanFailure);
-</script>
+    function showResult(obj){
+      document.getElementById("reader").style.display = "none";  // hide camera
+      const resultCard = document.getElementById("resultCard");
+      const statusBadge = document.getElementById("statusBadge");
+      const statusText = document.getElementById("statusText");
+      const details = document.getElementById("details");
+      const errorCard = document.getElementById("errorCard");
+
+      errorCard.style.display = "none";
+      resultCard.style.display = "block";
+
+      const due = Number(obj.Due||0);
+      if (!Number.isNaN(due) && due>0){
+        statusBadge.className = "badge bad";
+        statusBadge.textContent = "Due Pending";
+        statusText.textContent = `Payment due ${formatMoney(due)}`;
+      } else {
+        statusBadge.className = "badge ok";
+        statusBadge.textContent = "Payment Clear";
+        statusText.textContent = "All dues settled";
+      }
+      details.innerHTML = renderDetails(obj);
+
+      if (navigator.vibrate) navigator.vibrate(50);
+
+      // 🔴 stop scanner
+      if (scanner) {
+        scanner.clear().catch(err => console.warn("Clear failed", err));
+        scanner = null;
+      }
+    }
+
+    function showError(msg){
+      document.getElementById("reader").style.display = "none";
+      document.getElementById("resultCard").style.display = "none";
+      const e = document.getElementById("errorCard");
+      document.getElementById("errorText").textContent = msg;
+      e.style.display = "block";
+      if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
+      if (scanner) {
+        scanner.clear().catch(err => console.warn("Clear failed", err));
+        scanner = null;
+      }
+    }
+
+    function restartScanner(){
+      document.getElementById("resultCard").style.display = "none";
+      document.getElementById("errorCard").style.display = "none";
+      document.getElementById("reader").style.display = "block";
+      if (!scanner) {
+        scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
+        scanner.render(onScanSuccess, onScanFailure);
+      }
+    }
+
+    // Attach to all "Scan Again" buttons
+    document.querySelectorAll("#clearBtn").forEach(btn => {
+      btn.addEventListener("click", restartScanner);
+    });
+
+    function onScanSuccess(decodedText){
+      try{
+        const obj = JSON.parse(decodedText);
+        if (!obj.BookingID) throw new Error("Missing BookingID");
+        showResult(obj);
+      }catch(e){
+        showError("Could not parse QR content. Raw: " + decodedText);
+      }
+    }
+    function onScanFailure(error){ /* ignore noisy frames */ }
+
+    // Start scanner on load
+    restartScanner();
+  </script>
 </body>
 </html>
-
