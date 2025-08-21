@@ -1,212 +1,180 @@
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sneh Prayas - Ashtaapad Yatra</title>
+  <title>Sneh Prayas - Ashtapad Yatra QR Scanner</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
     body {
-      font-family: "Segoe UI", Arial, sans-serif;
-      margin: 0; padding: 0;
-      background: linear-gradient(135deg, #fdfcfb, #e2d1c3);
-      color: #333;
+      font-family: "Arial", sans-serif;
+      margin: 0;
+      padding: 0;
       text-align: center;
+      background: url('https://i.ibb.co/8d1y3Vx/mountain-bg.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
     }
     header {
-      padding: 30px 15px;
-      background: linear-gradient(135deg, #f7b733, #fc4a1a);
-      color: white;
-      font-size: 1.6em;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 20px;
+      font-size: 1.8em;
       font-weight: bold;
-      border-bottom: 4px solid #d48806;
+      text-shadow: 2px 2px 4px #000;
     }
     header small {
-      display:block;
-      margin-top: 5px;
+      display: block;
       font-size: 0.7em;
-      font-weight: normal;
-      color: #fff5d7;
+      margin-top: 5px;
     }
-    #reader { width: 320px; margin: 20px auto; display:none; }
-    .container { padding: 20px; }
-
+    #middle-image {
+      margin: 20px auto;
+      width: 200px;
+      height: 200px;
+      background: url('https://i.ibb.co/0qDbFMS/jain-tirthankar.png') no-repeat center center;
+      background-size: contain;
+      opacity: 0.8;
+    }
+    #scanner-container {
+      display: none;
+      margin: 20px auto;
+      width: 320px;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 1.3em;
+      font-weight: bold;
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.8);
+      color: black;
+      max-width: 80%;
+    }
     .btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      gap: 8px;
-      margin: 10px; padding: 12px 18px;
-      border: none; border-radius: 10px;
-      font-size: 1em; cursor: pointer;
-      transition: 0.2s;
+      padding: 12px 20px;
+      margin: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: bold;
+      transition: 0.3s;
     }
-    .btn:hover { opacity: 0.9; }
-    .btn-scan { background: #28a745; color: white; }
-    .btn-reset { background: #d9534f; color: white; }
-    .btn-history { background: #f0ad4e; color: white; }
-
-    .card {
-      display: none; max-width: 400px; margin: 20px auto;
-      padding: 15px; border-radius: 12px;
-      background: white; color:#333;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    .btn-scan {
+      background: #28a745;
+      color: white;
+    }
+    .btn-reset {
+      background: #dc3545;
+      color: white;
+    }
+    #details {
+      margin: 20px auto;
+      padding: 15px;
+      width: 80%;
+      max-width: 600px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 12px;
+      color: black;
       text-align: left;
     }
-    .row { display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #eee; }
-    .row:last-child{ border-bottom:none; }
-    .key { font-weight:bold; color:#555; }
-    .val { color:#222; }
-    .badge { display:inline-block; padding:6px 12px; border-radius:20px; font-size:0.9em; margin-bottom:10px; }
-    .ok { background:#d4edda; color:#155724; }
-    .bad { background:#f8d7da; color:#721c24; }
-    .error { background:#fff3cd; color:#856404; }
-    #detailsList {
-      max-width:500px; margin:20px auto; text-align:left;
-      background:white; color:black; border-radius:10px; padding:10px;
-      display:none;
+    #quotes {
+      margin: 20px;
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #ffe6cc;
+      text-shadow: 1px 1px 3px #000;
     }
-    .history-item { border-bottom:1px solid #ddd; padding:8px 0; }
   </style>
 </head>
 <body>
   <header>
-    🌸 Sneh Prayas welcomes you all 🌸
-    <small>Ashtaapad Yatra - A journey of faith, peace, and togetherness</small>
+    🌸 स्नेह प्रयास आप सभी का पवित्र अष्टापद यात्रा में हार्दिक स्वागत करता है 🌸
+    <small>🙏 भगवान आदिनाथ की कृपा से यह यात्रा मंगलमय हो 🙏</small>
+    <small>🕉️ चलो साथ मिलकर कैलाश की ओर – शांति, अहिंसा और मैत्री का संदेश फैलाएँ 🕉️</small>
   </header>
-  <div class="container">
-    <button id="startScan" class="btn btn-scan">📷 Scan QR</button>
-    <button id="showHistory" class="btn btn-history">📑 Show Scanned Details</button>
-    <button id="resetHistory" class="btn btn-reset">♻ Reset</button>
 
+  <div id="middle-image"></div>
+
+  <button class="btn btn-scan" onclick="startScanner()">📷 QR Scan करें</button>
+  <button class="btn btn-reset" onclick="resetDetails()">🗑 Reset Details</button>
+
+  <div id="scanner-container">
     <div id="reader"></div>
-
-    <div id="resultCard" class="card">
-      <div id="statusBadge" class="badge"></div>
-      <div id="statusText"></div>
-      <div id="details"></div>
-    </div>
-
-    <div id="errorCard" class="card">
-      <div class="badge error">Invalid QR</div>
-      <div id="errorText"></div>
-    </div>
-
-    <div id="detailsList"></div>
   </div>
 
+  <div id="result">👉 कृपया QR कोड स्कैन करें...</div>
+
+  <div id="details">
+    <h3>📋 Scan History</h3>
+    <ul id="history-list"></ul>
+  </div>
+
+  <div id="quotes"></div>
+
   <script>
-    let scanner;
-    let history = []; // store scanned data
+    let html5QrcodeScanner;
+    let historyList = [];
 
-    function formatMoney(x){
-      if (x===undefined || x===null || x==="") return "";
-      const n = Number(x);
-      if (Number.isNaN(n)) return x;
-      return "₹" + n.toLocaleString("en-IN", {maximumFractionDigits:0});
+    function startScanner() {
+      document.getElementById("scanner-container").style.display = "block";
+      html5QrcodeScanner = new Html5Qrcode("reader");
+      html5QrcodeScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        onScanSuccess
+      );
     }
 
-    function renderDetails(obj){
-      const fields = [
-        ["Booking ID", obj.BookingID],
-        ["Name", obj.Name],
-        ["Contact", obj.Contact],
-        ["Age", obj.Age],
-        ["Gender", obj.Gender],
-        ["Size", obj.Size],
-        ["Paid", formatMoney(obj.Paid)],
-        ["Due", formatMoney(obj.Due)],
-        ["Total", formatMoney(obj.Total)],
-        ["Confirmation", obj.Confirmation]
-      ];
-      return fields.map(([k,v])=>`
-        <div class="row">
-          <div class="key">${k}</div>
-          <div class="val">${(v ?? "").toString()}</div>
-        </div>
-      `).join("");
+    function onScanSuccess(decodedText) {
+      // Stop scanner after first valid scan
+      html5QrcodeScanner.stop().then(() => {
+        document.getElementById("scanner-container").style.display = "none";
+      });
+
+      let resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = `
+        ✅ सफल स्कैन: <br>
+        <b>${decodedText}</b>
+      `;
+
+      // Store in history
+      historyList.push(decodedText);
+      updateHistory();
     }
 
-    function showResult(obj){
-      document.getElementById("reader").style.display = "none";
-      document.getElementById("resultCard").style.display = "block";
-      document.getElementById("errorCard").style.display = "none";
-
-      const statusBadge = document.getElementById("statusBadge");
-      const statusText = document.getElementById("statusText");
-      const details = document.getElementById("details");
-
-      const due = Number(obj.Due||0);
-      if (!Number.isNaN(due) && due>0){
-        statusBadge.className = "badge bad";
-        statusBadge.textContent = "Due Pending";
-        statusText.textContent = `Payment due ${formatMoney(due)}`;
-      } else {
-        statusBadge.className = "badge ok";
-        statusBadge.textContent = "Payment Clear";
-        statusText.textContent = "All dues settled";
-      }
-      details.innerHTML = renderDetails(obj);
-
-      if (navigator.vibrate) navigator.vibrate(50);
-      if (scanner) {
-        scanner.clear().catch(err => console.warn("Clear failed", err));
-        scanner = null;
-      }
-
-      history.push(obj);
+    function updateHistory() {
+      let list = document.getElementById("history-list");
+      list.innerHTML = "";
+      historyList.forEach((item, index) => {
+        let li = document.createElement("li");
+        li.textContent = item;
+        list.appendChild(li);
+      });
     }
 
-    function showError(msg){
-      document.getElementById("reader").style.display = "none";
-      document.getElementById("resultCard").style.display = "none";
-      const e = document.getElementById("errorCard");
-      document.getElementById("errorText").textContent = msg;
-      e.style.display = "block";
-      if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
-      if (scanner) {
-        scanner.clear().catch(err => console.warn("Clear failed", err));
-        scanner = null;
-      }
+    function resetDetails() {
+      historyList = [];
+      updateHistory();
+      document.getElementById("result").innerHTML = "👉 कृपया QR कोड स्कैन करें...";
     }
 
-    function startScanner(){
-      document.getElementById("reader").style.display = "block";
-      document.getElementById("resultCard").style.display = "none";
-      document.getElementById("errorCard").style.display = "none";
-      if (!scanner) {
-        scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
-        scanner.render(onScanSuccess, onScanFailure);
-      }
+    // Rotating Hindi Quotes
+    const hindiQuotes = [
+      "🙏 अहिंसा परमो धर्मः 🙏",
+      "🌸 जियो और जीने दो 🌸",
+      "🕉️ आत्मा ही परमेश्वर है 🕉️",
+      "🌿 संयम ही सच्चा साधन है 🌿",
+      "✨ धर्म की यात्रा ही मोक्ष का मार्ग है ✨"
+    ];
+    let index = 0;
+    function changeQuote() {
+      document.getElementById("quotes").innerText = hindiQuotes[index];
+      index = (index + 1) % hindiQuotes.length;
     }
-
-    function onScanSuccess(decodedText){
-      try{
-        const obj = JSON.parse(decodedText);
-        if (!obj.BookingID) throw new Error("Missing BookingID");
-        showResult(obj);
-      }catch(e){
-        showError("Invalid QR content: " + decodedText);
-      }
-    }
-    function onScanFailure(error){}
-
-    // Buttons
-    document.getElementById("startScan").addEventListener("click", startScanner);
-    document.getElementById("showHistory").addEventListener("click", () => {
-      const listDiv = document.getElementById("detailsList");
-      if (history.length===0) {
-        listDiv.innerHTML = "<p>No QR codes scanned yet.</p>";
-      } else {
-        listDiv.innerHTML = history.map((h,i)=>`
-          <div class="history-item">
-            <b>${i+1}. ${h.BookingID}</b> - ${h.Name} (${h.Contact})
-          </div>
-        `).join("");
-      }
-      listDiv.style.display = "block";
-    });
-    document.getElementById("resetHistory").addEventListener("click", () => {
-      history = [];
-      document.getElementById("detailsList").innerHTML = "<p>History cleared.</p>";
-    });
+    setInterval(changeQuote, 4000);
+    changeQuote();
   </script>
 </body>
 </html>
