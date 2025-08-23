@@ -1,178 +1,65 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sneh Prayas QR Scanner</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Poppins', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      background: linear-gradient(rgba(255, 192, 203, 0.5), rgba(255, 255, 255, 0.8)),
-                  url("1646e094-5a4c-4e9b-9e8f-2e160fb5e83e.png") no-repeat center center fixed;
-      background-size: cover;
-      text-align: center;
-      overflow-x: hidden;
-    }
+<div id="result">Scanned details will appear here...</div>
 
-    h1 {
-      font-size: 2.2em;
-      margin-top: 20px;
-      color: #e91e63;
-      text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
-    }
+<script>
+  let html5QrCode;
+  let scannedDetails = [];
 
-    h2 {
-      font-size: 1.3em;
-      margin-bottom: 20px;
-      color: #880e4f;
-      font-style: italic;
-      text-shadow: 1px 1px 5px rgba(0,0,0,0.4);
-    }
-
-    #quotes {
-      font-size: 1.1em;
-      margin: 20px;
-      padding: 15px;
-      border-radius: 10px;
-      color: white;
-      background: rgba(0,0,0,0.4); 
-      animation: fadeIn 2s ease-in-out infinite alternate;
-      max-width: 80%;
-    }
-
-    #result {
-      font-size: 1.1em;
-      margin-top: 20px;
-      padding: 20px;
-      background: rgba(255,255,255,0.7); 
-      border-radius: 15px;
-      box-shadow: 0px 4px 15px rgba(0,0,0,0.2);
-      max-width: 85%;
-      word-wrap: break-word;
-    }
-
-    button {
-      background-color: #e91e63;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      margin: 10px;
-      border-radius: 25px;
-      font-size: 1em;
-      cursor: pointer;
-      transition: transform 0.2s;
-      box-shadow: 2px 4px 10px rgba(0,0,0,0.3);
-    }
-
-    button:hover {
-      transform: scale(1.05);
-      background-color: #c2185b;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0.7; }
-      to { opacity: 1; }
-    }
-
-    #reader {
-      width: 280px;
-      margin-top: 20px;
-      display: none;
-    }
-  </style>
-</head>
-<body>
-
-  <h1>🌸 स्नेह प्रयास आप सभी का हार्दिक स्वागत करता है 🌸</h1>
-  <h2>आष्टापद यात्रा में पावन मिलन का शुभ अवसर</h2>
-
-  <button onclick="startScanner()">📷 QR स्कैन करें</button>
-  <button onclick="resetDetails()">🗑 विवरण रीसेट करें</button>
-
-  <div id="reader"></div>
-  <div id="result">Scanned details will appear here...</div>
-
-  <div id="quotes">"अहिंसा परमोधर्मः" – भगवान महावीर</div>
-
-  <script>
-    let html5QrCode;
-    let scannedDetails = [];
-
-    function startScanner() {
-      document.getElementById("reader").style.display = "block";
-      html5QrCode = new Html5Qrcode("reader");
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
-        (decodedText, decodedResult) => {
-          try {
-            let data = JSON.parse(decodedText);
-            displayResult(data);
-            scannedDetails.push(data);
-            localStorage.setItem("scannedData", JSON.stringify(scannedDetails));
-            html5QrCode.stop().then(() => {
-              document.getElementById("reader").style.display = "none";
-            });
-          } catch (e) {
-            document.getElementById("result").innerText = "Invalid QR Code!";
-          }
-        },
-        (errorMessage) => {}
-      ).catch(err => {
-        console.log("Error starting scanner", err);
-      });
-    }
-
-    function displayResult(data) {
-      document.getElementById("result").innerHTML = `
-        <b>Booking ID:</b> ${data.BookingID}<br>
-        <b>Name:</b> ${data.Name}<br>
-        <b>Contact:</b> ${data.Contact}<br>
-        <b>Age:</b> ${data.Age}<br>
-        <b>Gender:</b> ${data.Gender}<br>
-        <b>Size:</b> ${data.Size}<br>
-        <b>Paid:</b> ${data.Paid}<br>
-        <b>Due:</b> ${data.Due}<br>
-        <b>Total:</b> ${data.Total}<br>
-        <b>Confirmation:</b> ${data.Confirmation}
-      `;
-    }
-
-    function resetDetails() {
-      scannedDetails = [];
-      localStorage.removeItem("scannedData");
-      document.getElementById("result").innerText = "Scanned details will appear here...";
-    }
-
-    // Quotes rotation
-    const quotes = [
-      "अहिंसा परमोधर्मः – भगवान महावीर",
-      "जियो और जीने दो – महावीर स्वामी",
-      "शांति से बढ़कर कोई तपस्या नहीं है।",
-      "सच्चा धर्म आत्मा की शुद्धि में है।",
-      "मनुष्य स्वयं अपने सुख-दुःख का निर्माता है।"
-    ];
-    let quoteIndex = 0;
-    setInterval(() => {
-      document.getElementById("quotes").innerText = quotes[quoteIndex];
-      quoteIndex = (quoteIndex + 1) % quotes.length;
-    }, 5000);
-
-    // Load saved details
-    window.onload = () => {
-      let saved = localStorage.getItem("scannedData");
-      if (saved) {
-        scannedDetails = JSON.parse(saved);
+  function startScanner() {
+    document.getElementById("reader").style.display = "block";
+    html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250 },
+      (decodedText) => {
+        try {
+          let data = JSON.parse(decodedText);
+          scannedDetails.push(data);
+          localStorage.setItem("scannedData", JSON.stringify(scannedDetails));
+          displayAllResults();
+          html5QrCode.stop().then(() => {
+            document.getElementById("reader").style.display = "none";
+          });
+        } catch (e) {
+          alert("Invalid QR Code!");
+        }
       }
+    );
+  }
+
+  function displayAllResults() {
+    const container = document.getElementById("result");
+    container.innerHTML = "";
+    scannedDetails.forEach((data, index) => {
+      container.innerHTML += `
+        <div style="margin-bottom:15px; text-align:left;">
+          <strong>Scan ${index + 1}</strong><br>
+          <b>Booking ID:</b> ${data.BookingID}<br>
+          <b>Name:</b> ${data.Name}<br>
+          <b>Contact:</b> ${data.Contact}<br>
+          <b>Age:</b> ${data.Age}<br>
+          <b>Gender:</b> ${data.Gender}<br>
+          <b>Size:</b> ${data.Size}<br>
+          <b>Paid:</b> ${data.Paid}<br>
+          <b>Due:</b> ${data.Due}<br>
+          <b>Total:</b> ${data.Total}<br>
+          <b>Confirmation:</b> ${data.Confirmation}<br>
+        </div>
+      `;
+    });
+  }
+
+  function resetDetails() {
+    scannedDetails = [];
+    localStorage.removeItem("scannedData");
+    document.getElementById("result").innerText = "Scanned details will appear here...";
+  }
+
+  // Load saved details on page load
+  window.onload = () => {
+    let saved = localStorage.getItem("scannedData");
+    if (saved) {
+      scannedDetails = JSON.parse(saved);
+      displayAllResults();
     }
-  </script>
-</body>
-</html>
+  }
+</script>
