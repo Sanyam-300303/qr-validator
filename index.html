@@ -15,7 +15,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      background: linear-gradient(rgba(255, 192, 203, 0.5), rgba(255, 255, 255, 0.8)),
+      background: linear-gradient(rgba(255, 182, 193, 0.6), rgba(255, 255, 255, 0.8)),
                   url("1646e094-5a4c-4e9b-9e8f-2e160fb5e83e.png") no-repeat center center fixed;
       background-size: cover;
       text-align: center;
@@ -101,12 +101,55 @@
     let html5QrCode;
     let scannedDetails = [];
 
-    // Example master list (replace with your own data)
+    // Full passenger list
     const masterPassengers = [
-      { BookingID: "SPC101", Name: "Rahul Jain", Contact: "9999999999" },
-      { BookingID: "SPC102", Name: "Meera Shah", Contact: "8888888888" },
-      { BookingID: "SPC103", Name: "Anil Doshi", Contact: "7777777777" },
-      { BookingID: "SPC104", Name: "Sunita Modi", Contact: "6666666666" }
+      {BookingID:"SPC101",Amount:"35000",Name:"Sulekha Patni"},
+      {BookingID:"SPC102",Amount:"35000",Name:"Abhay Patni"},
+      {BookingID:"SPC103",Amount:"35000",Name:"Kathanshi Patni"},
+      {BookingID:"SPC104",Amount:"35000",Name:"Maina Devi Patni"},
+      {BookingID:"SPC105",Amount:"",Name:"Priyanka Barjatya"},
+      {BookingID:"SPC106",Amount:"",Name:"Vinit Barjatya"},
+      {BookingID:"SPC107",Amount:"",Name:"Hardik Barjatya"},
+      {BookingID:"SPC108",Amount:"",Name:"Sanaya Barjatya"},
+      {BookingID:"SPC109",Amount:"",Name:"Sonika Kala"},
+      {BookingID:"SPC110",Amount:"",Name:"Arvind Kala"},
+      {BookingID:"SPC111",Amount:"",Name:"Hansvi Kala"},
+      {BookingID:"SPC112",Amount:"",Name:"Ridhish Kala"},
+      {BookingID:"SPC113",Amount:"37100",Name:"Anita Patni"},
+      {BookingID:"SPC114",Amount:"35000",Name:"Arun Patni"},
+      {BookingID:"SPC115",Amount:"35000",Name:"Akshat Patni"},
+      {BookingID:"SPC116",Amount:"35000",Name:"Ishika Patni"},
+      {BookingID:"SPC117",Amount:"35000",Name:"Seema Pandya"},
+      {BookingID:"SPC118",Amount:"35000",Name:"Maina Devi Pandya"},
+      {BookingID:"SPC119",Amount:"35000",Name:"Dashna Pandya"},
+      {BookingID:"SPC120",Amount:"35000",Name:"Diva Pandya"},
+      {BookingID:"SPC121",Amount:"45000",Name:"Sunita Barjatya"},
+      {BookingID:"SPC122",Amount:"45000",Name:"Aklank Barjatya"},
+      {BookingID:"SPC125",Amount:"11000",Name:"Bina Barjatya"},
+      {BookingID:"SPC126",Amount:"11000",Name:"Vishal Barjatya"},
+      {BookingID:"SPC127",Amount:"11000",Name:"Yogita Barjatya"},
+      {BookingID:"SPC128",Amount:"11000",Name:"Lalita Barjatya"},
+      {BookingID:"SPC129",Amount:"35000",Name:"Geeta Jain"},
+      {BookingID:"SPC130",Amount:"35000",Name:"Dipika Patni"},
+      {BookingID:"SPC131",Amount:"35000",Name:"Anil Patni"},
+      {BookingID:"SPC132",Amount:"35000",Name:"Grishi Patni"},
+      {BookingID:"SPC133",Amount:"35000",Name:"Meena Patni"},
+      {BookingID:"SPC134",Amount:"35000",Name:"Devendra Patni"},
+      {BookingID:"SPC135",Amount:"35000",Name:"Mehak Patni"},
+      {BookingID:"SPC136",Amount:"35000",Name:"SWATI JAIN"},
+      {BookingID:"SPC137",Amount:"35000",Name:"Neelam Rawka"},
+      {BookingID:"SPC138",Amount:"24000",Name:"MAINA DEVI JAIN"},
+      {BookingID:"SPC140",Amount:"35000",Name:"Rekha Sethi"},
+      {BookingID:"SPC141",Amount:"35000",Name:"Alka Sogani"},
+      {BookingID:"SPC142",Amount:"35000",Name:"Sweta Sogani"},
+      {BookingID:"SPC143",Amount:"35000",Name:"Seema Patni"},
+      {BookingID:"SPC144",Amount:"35000",Name:"Narendra Patni"},
+      {BookingID:"SPC145",Amount:"24000",Name:"Sugandha Gangwal"},
+      {BookingID:"SPC146",Amount:"24000",Name:"Vinit Gangwal"},
+      {BookingID:"SPC147",Amount:"",Name:"Pushpa Gangwal"},
+      {BookingID:"SPC148",Amount:"",Name:"Ridhi Gangwal"},
+      {BookingID:"SPC149",Amount:"",Name:"Vijetha Kasliwal"},
+      {BookingID:"SPC150",Amount:"",Name:"Tarun Kasliwal"}
     ];
 
     function startScanner() {
@@ -142,7 +185,7 @@
             <strong>Scan ${index + 1}</strong><br>
             <b>Booking ID:</b> ${data.BookingID}<br>
             <b>Name:</b> ${data.Name}<br>
-            <b>Contact:</b> ${data.Contact}<br>
+            <b>Amount:</b> ${data.Amount || "-"}<br>
           </div>
         `;
       });
@@ -168,7 +211,7 @@
             <div style="margin-bottom:10px;">
               <b>Booking ID:</b> ${p.BookingID}<br>
               <b>Name:</b> ${p.Name}<br>
-              <b>Contact:</b> ${p.Contact}<br>
+              <b>Amount:</b> ${p.Amount || "-"}<br>
             </div>
           `;
         });
@@ -189,7 +232,6 @@
       quoteIndex = (quoteIndex + 1) % quotes.length;
     }, 5000);
 
-    // Load saved details on page load
     window.onload = () => {
       let saved = localStorage.getItem("scannedData");
       if (saved) {
