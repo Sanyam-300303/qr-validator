@@ -1,16 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sneh Prayas QR Scanner</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
-  <script type="module">
-    // Firebase SDKs
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, onSnapshot, deleteDoc, doc } 
-      from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      background: linear-gradient(rgba(255, 182, 193, 0.6), rgba(255, 255, 255, 0.8)),
+                  url("1646e094-5a4c-4e9b-9e8f-2e160fb5e83e.png") no-repeat center center fixed;
+      background-size: cover;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2.2em;
+      margin-top: 20px;
+      color: #e91e63;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+    }
+    h2 {
+      font-size: 1.3em;
+      margin-bottom: 20px;
+      color: #880e4f;
+      font-style: italic;
+      text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.4);
+    }
+    #quotes {
+      font-size: 1.1em;
+      margin: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      color: white;
+      background: rgba(0, 0, 0, 0.4);
+      animation: fadeIn 2s ease-in-out infinite alternate;
+      max-width: 80%;
+    }
+    #result, #pending {
+      font-size: 1em;
+      margin-top: 20px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 15px;
+      box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+      max-width: 85%;
+      word-wrap: break-word;
+      text-align: left;
+    }
+    button {
+      background-color: #e91e63;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      margin: 10px;
+      border-radius: 25px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: transform 0.2s;
+      box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.3);
+    }
+    button:hover {
+      transform: scale(1.05);
+      background-color: #c2185b;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0.7; }
+      to { opacity: 1; }
+    }
+    #reader {
+      width: 280px;
+      margin-top: 20px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌸 स्नेह प्रयास आप सभी का हार्दिक स्वागत करता है 🌸</h1>
+  <h2>आष्टापद यात्रा में पावन मिलन</h2>
 
+  <button onclick="startScanner()">📷 Scan QR</button>
+  <button onclick="resetDetails()">🗑 Reset Details</button>
+  <button onclick="showPending()">📝 Show Pending</button>
+
+  <div id="reader"></div>
+  <div id="result">Scanned details will appear here...</div>
+  <div id="pending"></div>
+  <div id="quotes">"अहिंसा परमोधर्मः" – भगवान महावीर</div>
+
+  <script>
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyCqOM8xLXE6aIPvoP7NIjB70023g68PSdU",
       authDomain: "ashtapad-mahavandana-2025.firebaseapp.com",
@@ -20,11 +108,10 @@
       appId: "1:3610641543:web:0ddf96d30f969638cde422",
       measurementId: "G-ER6BYGWZZL"
     };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    const scansRef = collection(db, "scans");
+    let html5QrCode;
 
     // Full passenger list
     const masterPassengers = [
@@ -77,10 +164,7 @@
       {BookingID:"SPC150",Amount:"",Name:"Tarun Kasliwal"}
     ];
 
-    let html5QrCode;
-
-    // Start scanner
-    window.startScanner = function () {
+    function startScanner() {
       document.getElementById("reader").style.display = "block";
       html5QrCode = new Html5Qrcode("reader");
       html5QrCode.start(
@@ -88,69 +172,67 @@
         { fps: 10, qrbox: 250 },
         async (decodedText) => {
           try {
-            const data = JSON.parse(decodedText);
-            await addDoc(scansRef, data);
-            html5QrCode.stop();
-            document.getElementById("reader").style.display = "none";
-          } catch {
+            let data = JSON.parse(decodedText);
+            await db.collection("scans").doc(data.BookingID).set(data);
+            html5QrCode.stop().then(() => {
+              document.getElementById("reader").style.display = "none";
+            });
+          } catch (e) {
             alert("Invalid QR Code!");
           }
         }
-      );
-    };
+      ).catch(err => {
+        console.log("Error starting scanner", err);
+      });
+    }
 
-    // Show scanned details live
-    const resultDiv = document.getElementById("result");
-    const pendingDiv = document.getElementById("pending");
+    function resetDetails() {
+      db.collection("scans").get().then(snapshot => {
+        snapshot.forEach(doc => doc.ref.delete());
+      });
+      document.getElementById("result").innerText = "Scanned details will appear here...";
+      document.getElementById("pending").innerHTML = "";
+    }
 
-    onSnapshot(scansRef, (snapshot) => {
-      const scanned = snapshot.docs.map(d => d.data());
-      displayResults(scanned);
-      showPending(scanned);
+    function showPending() {
+      db.collection("scans").get().then(snapshot => {
+        const scannedIDs = snapshot.docs.map(doc => doc.id);
+        const pending = masterPassengers.filter(p => !scannedIDs.includes(p.BookingID));
+        let pendingDiv = document.getElementById("pending");
+        pendingDiv.innerHTML = "<h3>Pending Passengers:</h3>";
+        if (pending.length === 0) {
+          pendingDiv.innerHTML += "<p>All passengers have been scanned.</p>";
+        } else {
+          pending.forEach(p => {
+            pendingDiv.innerHTML += `<div><b>Booking ID:</b> ${p.BookingID}<br><b>Name:</b> ${p.Name}<br><b>Amount:</b> ${p.Amount || "-"}<br></div><br>`;
+          });
+        }
+      });
+    }
+
+    // Real-time updates
+    db.collection("scans").onSnapshot(snapshot => {
+      const container = document.getElementById("result");
+      container.innerHTML = "";
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        container.innerHTML += `<div><b>Booking ID:</b> ${data.BookingID}<br><b>Name:</b> ${data.Name}<br><b>Amount:</b> ${data.Amount || "-"}</div><br>`;
+      });
     });
 
-    function displayResults(scanned) {
-      resultDiv.innerHTML = "";
-      scanned.forEach((data, index) => {
-        resultDiv.innerHTML += `
-          <div>
-            <strong>${index + 1}. ${data.BookingID}</strong><br>
-            Name: ${data.Name}<br>
-            Amount: ${data.Amount || "-"}
-          </div><hr>
-        `;
-      });
-    }
-
-    window.resetDetails = async function() {
-      const snapshot = await getDocs(scansRef);
-      snapshot.forEach(async (docSnap) => {
-        await deleteDoc(doc(db, "scans", docSnap.id));
-      });
-    };
-
-    function showPending(scanned) {
-      const scannedIDs = scanned.map(s => s.BookingID);
-      const pending = masterPassengers.filter(p => !scannedIDs.includes(p.BookingID));
-      pendingDiv.innerHTML = "<h3>Pending Passengers:</h3>";
-      pending.forEach(p => {
-        pendingDiv.innerHTML += `<div>${p.BookingID} - ${p.Name} (${p.Amount || "-"})</div>`;
-      });
-    }
+    // Quotes rotation
+    const quotes = [
+      "अहिंसा परमोधर्मः – भगवान महावीर",
+      "जियो और जीने दो – महावीर स्वामी",
+      "शांति से बढ़कर कोई तपस्या नहीं है।",
+      "सच्चा धर्म आत्मा की शुद्धि में है।",
+      "मनुष्य स्वयं अपने सुख-दुःख का निर्माता है।"
+    ];
+    let quoteIndex = 0;
+    setInterval(() => {
+      document.getElementById("quotes").innerText = quotes[quoteIndex];
+      quoteIndex = (quoteIndex + 1) % quotes.length;
+    }, 5000);
   </script>
-  <style>
-    body { font-family: 'Poppins', sans-serif; text-align: center; }
-    #reader { width: 300px; margin: 20px auto; display: none; }
-    #result, #pending { margin: 20px; text-align: left; }
-    button { margin: 10px; padding: 10px 15px; }
-  </style>
-</head>
-<body>
-  <h1>ASHTAPAD MAHAVANDANA 2025</h1>
-  <button onclick="startScanner()">Scan QR</button>
-  <button onclick="resetDetails()">Reset All</button>
-  <div id="reader"></div>
-  <div id="result">Scanned results will appear here...</div>
-  <div id="pending"></div>
 </body>
 </html>
